@@ -8,7 +8,7 @@ These commands are run in your terminal:
 * `chat-buddy init`: Launches the interactive setup wizard to configure your username, agent name, and API keys.
 * `chat-buddy run`: Starts the WhatsApp bot and displays the QR code for linking your account.
 * `chat-buddy login`: Initiates the Google OAuth flow to grant the bot permission to manage your Google Calendar.
-* `chat-buddy key`: Allows you to safely rotate your OpenAI or Google API keys without fully resetting the bot.
+* `chat-buddy key`: Allows you to safely rotate your OpenAI or Google OAuth Client ID & Client Secret without fully resetting the bot.
 * `chat-buddy new --config`: Performs a full reconfiguration, clearing previous sessions and allowing you to rename the agent and swap keys.
 
 ## In-Chat Commands

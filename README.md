@@ -159,12 +159,12 @@ To enable calendar features (scheduling meetings, reminders), you need to create
 
 ### Step 5: Set Up Chat Buddy
 
-When you run `chat-buddy init`, you'll be asked for a **Google API Key**. You have two options:
+When you run `chat-buddy init`, you'll be asked for a **Google OAuth Client ID & Client Secret**. You have two options:
 
 | Option | Process |
 |--------|---------|
-| **Option A: Use OAuth (Recommended)** | Leave the field blank during `init`. Later, run `chat-buddy login` to generate an OAuth token. Chat Buddy will prompt for your Client ID and Secret. |
-| **Option B: Manual Setup** | Place your downloaded `credentials.json` in your working directory or set `GOOGLE_OAUTH_CREDENTIALS_PATH=/path/to/credentials.json` as an environment variable. |
+| **Option A: Use OAuth (Recommended)** | When prompted "Enable Google Calendar integration?", type `y`. Then provide your Client ID and Secret when prompted. Later, run `chat-buddy login` to generate an OAuth token. |
+| **Option B: Manual Setup** | Set `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` as environment variables instead of using the interactive setup. |
 
 ### Step 6: Generate OAuth Token
 
@@ -211,7 +211,7 @@ Launches the **interactive setup wizard**. You'll be prompted to enter:
 | **Username** | Your name — the agent uses this to know who it represents |
 | **Agent Name** | The bot's display name (e.g. "Luffy", "Jarvis") |
 | **OpenAI API Key** | Your `sk-...` key that powers the AI agent |
-| **Google API Key** | Your `AIza...` key for Google Calendar integration |
+| **Google Calendar** | Choose whether to enable calendar integration. If yes, provide your OAuth Client ID and Secret |
 
 All secrets are **encrypted with AES-256-CBC** and stored at `~/.botwithaki/config.json`. They are never sent anywhere except to the respective API services.
 
@@ -282,12 +282,11 @@ This is required for the bot's calendar features (scheduling meetings, setting r
 > You do not need to manually place `credentials.json` in your working directory anymore.
 > `chat-buddy login` will auto-discover credentials from supported locations or prompt once for OAuth Client ID and Client Secret.
 >
-> **If you still prefer manual `credentials.json` setup:**
+> **If you still prefer manual `.env` setup:**
 > 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 > 2. Create a project → Enable the **Google Calendar API**
 > 3. Create **OAuth 2.0 credentials** (Desktop App type)
-> 4. Download the JSON and rename it to `credentials.json`
-> 5. Place it in your current directory or set `GOOGLE_OAUTH_CREDENTIALS_PATH`
+> 4. Export the Client ID and Client Secret into your `.env` file as `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET`
 
 ---
 
@@ -314,7 +313,9 @@ chat-buddy key
   Leave a field blank to keep the current key.
 
    New OpenAI API key (sk-...): sk-proj-new-key-here
-   New Google API key (AIza...):            ← left blank, keeps existing
+   Enable Google Calendar? (y/N/blank to keep current):
+   New Google OAuth Client ID (leave blank to keep current): 
+   New Google OAuth Client Secret (leave blank to keep current): 
 
    API keys updated securely!
 ```
@@ -332,7 +333,7 @@ The **all-in-one reconfiguration** command. Use this when you want to give your 
 | Step | Action |
 |------|--------|
 | **Rename Agent** | Change the bot's agent name (e.g. "Luffy" → "Jarvis") |
-| **Rotate Keys** | Enter new OpenAI and/or Google API keys |
+| **Rotate Keys** | Enter new OpenAI and/or Google OAuth Client ID & Client Secret |
 | **Reset WhatsApp** | Deletes the saved WhatsApp session (`~/.botwithaki/.wwebjs_auth`) |
 | **Reset Google** | Deletes the Google OAuth token (`~/.botwithaki/google/token.json`) |
 
@@ -349,7 +350,9 @@ After running this, the next `chat-buddy run` will require a fresh QR scan and (
    API Key Rotation
      Leave blank to keep the current key.
    New OpenAI API key (sk-...):
-   New Google API key (AIza...):
+   Enable Google Calendar? (y/N/blank to keep current):
+   New Google OAuth Client ID (leave blank to keep current): 
+   New Google OAuth Client Secret (leave blank to keep current): 
 
   Clearing auth sessions...
      WhatsApp session cleared

@@ -7,10 +7,13 @@ import crypto from "crypto";
 import os from "os";
 
 export interface BotConfig {
+  configVersion?: number;
   username: string;
   agentName: string;
   openaiApiKey: string;
-  googleApiKey: string;
+  enableGoogleCalendar: boolean;
+  googleOAuthClientId?: string;
+  googleOAuthClientSecret?: string;
   allowGroupReplies: boolean;
   timezone: string;
 }
@@ -34,6 +37,7 @@ const deriveKey = (): Buffer => {
 };
 
 export const encrypt = (plainText: string): string => {
+  if (!plainText) return "";
   const key = deriveKey();
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
@@ -43,6 +47,7 @@ export const encrypt = (plainText: string): string => {
 };
 
 export const decrypt = (encryptedText: string): string => {
+  if (!encryptedText) return "";
   const key = deriveKey();
   const [ivHex, encrypted] = encryptedText.split(":");
   if (!ivHex || !encrypted) {
@@ -73,10 +78,17 @@ export const saveConfig = (config: BotConfig): void => {
   ensureStorageDir();
 
   const encryptedConfig = {
+    configVersion: 2,
     username: config.username,
     agentName: config.agentName,
     openaiApiKey: encrypt(config.openaiApiKey),
-    googleApiKey: encrypt(config.googleApiKey),
+    enableGoogleCalendar: config.enableGoogleCalendar,
+    googleOAuthClientId: config.googleOAuthClientId
+      ? encrypt(config.googleOAuthClientId)
+      : undefined,
+    googleOAuthClientSecret: config.googleOAuthClientSecret
+      ? encrypt(config.googleOAuthClientSecret)
+      : undefined,
     allowGroupReplies: config.allowGroupReplies,
     timezone: config.timezone,
   };
@@ -101,11 +113,56 @@ export const loadConfig = (): BotConfig | null => {
 
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    const configVersion = raw.configVersion || 1;
+
+    let enableGoogleCalendar = raw.enableGoogleCalendar ?? false;
+    let clientId: string | undefined = raw.googleOAuthClientId
+      ? decrypt(raw.googleOAuthClientId)
+      : undefined;
+    let clientSecret: string | undefined = raw.googleOAuthClientSecret
+      ? decrypt(raw.googleOAuthClientSecret)
+      : undefined;
+
+    if (configVersion === 1) {
+      const legacyBlob = raw.googleOAuthCredentials || raw.googleApiKey;
+      if (legacyBlob) {
+        try {
+          const decryptedLegacy = decrypt(legacyBlob);
+          try {
+            const parsed = JSON.parse(decryptedLegacy);
+            if (parsed.installed?.client_id && parsed.installed?.client_secret) {
+              clientId = parsed.installed.client_id;
+              clientSecret = parsed.installed.client_secret;
+              enableGoogleCalendar = true;
+            }
+          } catch {
+            if (decryptedLegacy.includes(":") && !decryptedLegacy.startsWith("AIza")) {
+              const parts = decryptedLegacy.split(":");
+              if (parts.length === 2 && parts[0] && parts[1]) {
+                clientId = parts[0];
+                clientSecret = parts[1];
+                enableGoogleCalendar = true;
+              } else {
+                enableGoogleCalendar = false;
+              }
+            } else {
+              enableGoogleCalendar = false;
+            }
+          }
+        } catch {
+          enableGoogleCalendar = false;
+        }
+      }
+    }
+
     return {
+      configVersion: configVersion,
       username: raw.username,
       agentName: raw.agentName,
       openaiApiKey: decrypt(raw.openaiApiKey),
-      googleApiKey: decrypt(raw.googleApiKey),
+      enableGoogleCalendar,
+      googleOAuthClientId: clientId,
+      googleOAuthClientSecret: clientSecret,
       allowGroupReplies: raw.allowGroupReplies ?? false,
       timezone: raw.timezone ?? "Asia/Kolkata",
     };

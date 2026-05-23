@@ -25,16 +25,16 @@ export const handleCommand = async (message: MessageType, text: string): Promise
   }
 
   if (text == "/reset") {
-    const contact = await message.getContact();
-    const contactName = contact.pushname || contact.number;
-    clearHistory(contactName);
+    const contactId = message.from;
+    clearHistory(contactId);
     await message.reply("Chat history has been cleared.");
   }
 
   if (text == "/history") {
     const contact = await message.getContact();
+    const contactId = message.from;
     const contactName = contact.pushname || contact.number;
-    const history = getHistory(contactName);
+    const history = getHistory(contactId, contactName);
     if (history.length === 0) {
       await message.reply("No chat history found.");
     } else {

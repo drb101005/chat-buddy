@@ -7,11 +7,7 @@ import {
   clearUserHistory as clearPersistentHistory,
 } from "../storage/chatHistoryStore.js";
 
-export const storeMessage = (
-  userId: string,
-  message: string,
-  isAgent: boolean = false,
-): void => {
+export const storeMessage = (userId: string, message: string, isAgent: boolean = false): void => {
   appendMessage(userId, message, isAgent);
 };
 

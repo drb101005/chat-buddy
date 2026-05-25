@@ -39,11 +39,7 @@ const saveChatHistory = (): void => {
   fs.writeFileSync(historyPath, JSON.stringify(chatHistoryCache, null, 2), "utf-8");
 };
 
-export const appendMessage = (
-  userId: string,
-  message: string,
-  isAgent: boolean = false,
-): void => {
+export const appendMessage = (userId: string, message: string, isAgent: boolean = false): void => {
   const history = loadChatHistory();
 
   if (!history[userId]) {
